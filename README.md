@@ -1,94 +1,88 @@
-# 🖼️ Image Host
+# 🖼️ Image Host (Git Edition)
 
-A modern, green-themed image hosting site built with GitHub storage and Vercel serverless functions. Perfect for hosting images for Discord embeds and sharing.
+A simplified, green-themed image hosting site that uses **GitHub directly** for storage. No file size limits from Vercel - just GitHub's generous 100MB per file limit!
 
 ## ✨ Features
 
-- **Drag & Drop Upload** - Easy image uploading with drag and drop or click to browse
-- **15MB Max File Size** - Support for PNG, JPG, GIF, and WEBP images
+- **100MB Max File Size** - GitHub's limit, way better than Vercel's 4.5MB!
+- **No Backend Required** - Pure static site, works on GitHub Pages or any static host
 - **Discord-Optimized** - Direct image URLs perfect for Discord embeds
 - **One-Click Copy** - Quick copy buttons for direct links, Markdown, and HTML
 - **Image Gallery** - Beautiful grid view of all your uploaded images
 - **Search & Filter** - Easily find images by filename
-- **Delete Images** - Remove unwanted images with one click
 - **Git-Based Storage** - All images stored in a GitHub repository with version control
 - **Modern Green Theme** - Eye-pleasing green color scheme (#6eff7f)
 
-## 🚀 Setup Instructions
+## 🚀 Quick Setup
 
 ### 1. Create a GitHub Repository
 
-1. Go to [GitHub](https://github.com) and create a new repository
-2. Name it something like `image-storage` or `my-images`
-3. Make it **public** (required for raw image URLs to work)
-4. Initialize with a README (optional)
+1. Go to [GitHub](https://github.com) and create a new **public** repository
+2. Name it `image-storage` (or whatever you want)
+3. Create it with a README
 
-### 2. Generate a GitHub Personal Access Token
+### 2. Create the Images Folder
 
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Click "Generate new token" → "Generate new token (classic)"
-3. Give it a name like "Image Host"
-4. Set expiration (or select "No expiration" for convenience)
-5. Select these scopes:
-   - ✅ **repo** (Full control of private repositories)
-6. Click "Generate token"
-7. **Copy the token immediately** (you won't see it again!)
+1. In your new repo, click "Add file" → "Create new file"
+2. Type: `images/.gitkeep`
+3. Click "Commit new file"
 
-### 3. Set Up Vercel
+### 3. Deploy the Site
 
-1. Install Vercel CLI (if you haven't):
-   ```bash
-   npm install -g vercel
-   ```
+**Option A: GitHub Pages (Easiest)**
+1. In your repo, go to Settings → Pages
+2. Under "Source", select your branch (usually `main`)
+3. Upload these files to your repo: `index.html`, `styles.css`, `script.js`, `config.js`
+4. Your site will be live at `https://your-username.github.io/image-storage`
 
-2. Navigate to the project directory:
-   ```bash
-   cd image-host
-   ```
+**Option B: Vercel (Also Easy)**
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com) and import your repository
+3. Deploy! No environment variables needed!
 
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
+**Option C: Netlify**
+1. Drag and drop the project folder onto [Netlify Drop](https://app.netlify.com/drop)
+2. Done!
 
-4. Link to Vercel:
-   ```bash
-   vercel
-   ```
-   - Follow the prompts to create a new project
-   - Choose the default settings
+### 4. Configure Your Site
 
-### 4. Configure Environment Variables
+1. Visit your deployed site
+2. A configuration modal will appear
+3. Enter:
+   - Your GitHub username
+   - Your repository name (`image-storage`)
+   - Branch name (`main`)
+4. Click "Save Configuration"
 
-In your Vercel dashboard (or via CLI), add these environment variables:
+That's it! 🎉
 
-```bash
-GITHUB_TOKEN=ghp_your_token_here
-GITHUB_OWNER=your-github-username
-GITHUB_REPO=image-storage
-GITHUB_BRANCH=main
+## 📤 How to Upload Images
+
+Since this is a static site, you upload images directly to GitHub:
+
+1. Go to your repository on GitHub
+2. Navigate to the `images/` folder
+3. Click "Add file" → "Upload files"
+4. Drag and drop your images (up to 100MB each!)
+5. Click "Commit changes"
+6. Refresh your image host site to see the new images
+
+## 🎨 Using Your Images
+
+### For Discord
+1. Click on any image in the gallery
+2. Click "Copy Direct Link" or "Copy for Discord"
+3. Paste in Discord - it will auto-embed!
+
+### For Websites
+1. Click "Copy HTML" for ready-to-use `<img>` tags
+2. Or "Copy Markdown" for markdown files
+
+### Direct URLs
+All images are served from GitHub's CDN:
 ```
-
-**Via Vercel Dashboard:**
-1. Go to your project on vercel.com
-2. Settings → Environment Variables
-3. Add each variable (make sure to add them for Production, Preview, and Development)
-
-**Via CLI:**
-```bash
-vercel env add GITHUB_TOKEN
-vercel env add GITHUB_OWNER
-vercel env add GITHUB_REPO
-vercel env add GITHUB_BRANCH
+https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/images/YOUR_IMAGE.png
 ```
-
-### 5. Deploy
-
-```bash
-vercel --prod
-```
-
-Your image host is now live! 🎉
 
 ## 📁 Project Structure
 
@@ -96,117 +90,76 @@ Your image host is now live! 🎉
 image-host/
 ├── index.html          # Main HTML structure
 ├── styles.css          # Green-themed styling
-├── script.js           # Frontend JavaScript
-├── api/
-│   ├── upload.js       # Upload endpoint
-│   ├── images.js       # List images endpoint
-│   └── delete.js       # Delete endpoint
-├── package.json        # Dependencies
-├── vercel.json         # Vercel configuration
-└── README.md          # This file
+├── script.js           # Gallery and image handling
+└── config.js           # Repository configuration
 ```
 
-## 🎨 Features Explained
+## 🔧 No Backend Needed!
 
-### Upload Interface
-- Drag and drop images directly onto the upload area
-- Click to browse and select multiple images
-- Real-time upload progress
-- File validation (type and size)
-- Preview thumbnails during upload
+This version doesn't use:
+- ❌ Vercel serverless functions
+- ❌ API keys or tokens
+- ❌ Environment variables
+- ❌ Database
 
-### Gallery
-- Grid view of all uploaded images
-- Search functionality to filter by filename
-- Click any image to open detailed view
-- Responsive design works on all devices
+It just reads directly from GitHub's public API!
 
-### Image Modal
-- Full-size image preview
-- File information (size, dimensions, upload date)
-- Multiple copy options:
-  - **Direct Link** - Raw GitHub URL (perfect for Discord)
-  - **Markdown** - `![alt](url)` format
-  - **HTML** - `<img>` tag
-- Delete functionality
+## ⚙️ Configuration
 
-### Discord Integration
-The direct image URLs from GitHub work perfectly in Discord because:
-- They end in proper image extensions (.png, .jpg, etc.)
-- GitHub serves them with correct CORS headers
-- They load quickly from GitHub's CDN
+Your repository configuration is saved in your browser's localStorage, so:
+- Each device/browser needs to be configured once
+- You can reconfigure by clearing localStorage or editing `config.js`
+- No server-side configuration needed
 
-## 🔧 Development
+## 🌟 Advantages of This Approach
 
-Run locally with Vercel dev server:
+### vs. Vercel Functions:
+- ✅ 100MB file limit instead of 4.5MB
+- ✅ No serverless function cold starts
+- ✅ Simpler deployment (no environment variables)
+- ✅ Works on any static host (GitHub Pages, Netlify, Vercel, etc.)
 
-```bash
-npm run dev
-```
-
-This starts a local server at `http://localhost:3000` with serverless function support.
-
-## 🌟 Usage Tips
-
-### Uploading Images
-1. Drag images onto the upload area or click to browse
-2. Wait for upload to complete (you'll see "Uploaded!" status)
-3. Images automatically appear in the gallery
-
-### Sharing Images
-1. Click on any image in the gallery to open it
-2. Click "Copy Direct Link" for the raw URL
-3. Paste in Discord, forums, or anywhere else
-4. The image will embed automatically!
-
-### Organizing Images
-- All images are stored in the `images/` folder in your GitHub repo
-- Each upload creates a git commit
-- You can view the full history in your GitHub repository
-- Images are automatically timestamped to prevent naming conflicts
-
-### Deleting Images
-1. Click on the image you want to delete
-2. Click the "Delete" button
-3. Confirm the deletion
-4. The image is removed from GitHub and the gallery
+### vs. Other Image Hosts:
+- ✅ Complete control - you own your images
+- ✅ Git version history for all uploads
+- ✅ Free forever (GitHub's free tier)
+- ✅ Fast CDN delivery via GitHub
 
 ## 🔐 Security Notes
 
-- The GitHub token is stored securely in Vercel environment variables
-- It's never exposed to the client/browser
-- All API requests go through Vercel serverless functions
-- Currently, there's no upload authentication (anyone can upload)
-- For production use, consider adding authentication
+- Your repository must be **public** for the images to be accessible
+- Anyone can view your images (they're public URLs)
+- To upload, people need push access to your GitHub repo
+- Consider making your repo private if you only want specific people to upload (but images won't be publicly accessible then)
 
 ## 🐛 Troubleshooting
 
-**Images not loading?**
-- Make sure your GitHub repository is **public**
-- Check that environment variables are set correctly
-- Verify the GitHub token has `repo` scope
+**"Failed to load images"**
+- Make sure your repository is **public**
+- Verify the `images/` folder exists
+- Check that you entered the correct username/repo in the config
 
-**Upload failing?**
-- Check file size (must be under 15MB)
-- Verify file type (PNG, JPG, GIF, WEBP only)
-- Check Vercel function logs for errors
+**Images not appearing after upload**
+- Click the "Refresh" button in the gallery
+- GitHub's API may take a few seconds to update
 
-**Gallery empty?**
-- Images are stored in the `images/` folder in your repo
-- Check if the folder exists and contains images
-- Try clicking the Refresh button
+**Can't copy links**
+- Make sure your browser allows clipboard access
+- Try the fallback by selecting the URL manually
+
+## 💡 Tips
+
+1. **Organize your images**: You can create subfolders in the `images/` directory
+2. **Name your files well**: Use descriptive names for easy searching
+3. **Optimize before uploading**: Compress images to save space and load faster
+4. **Use .gitignore**: Add large files you don't want tracked
 
 ## 📝 License
 
 MIT - Feel free to use and modify!
 
-## 🙏 Credits
-
-Built with:
-- [Octokit](https://github.com/octokit/rest.js) - GitHub API client
-- [Vercel](https://vercel.com) - Serverless functions and hosting
-- GitHub - Image storage and CDN
-
 ---
 
 Made with 💚 and green (#6eff7f)
+
+No servers, no limits (well, 100MB), just pure git! 🚀

@@ -1,11 +1,4 @@
-// Configuration
-const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-
 // DOM Elements
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const uploadQueue = document.getElementById('uploadQueue');
 const galleryGrid = document.getElementById('galleryGrid');
 const searchInput = document.getElementById('searchInput');
 const refreshBtn = document.getElementById('refreshBtn');
@@ -15,7 +8,6 @@ const modalImage = document.getElementById('modalImage');
 const modalFilename = document.getElementById('modalFilename');
 const modalSize = document.getElementById('modalSize');
 const modalDimensions = document.getElementById('modalDimensions');
-const modalDate = document.getElementById('modalDate');
 const copyFeedback = document.getElementById('copyFeedback');
 
 let currentImages = [];
@@ -28,15 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    // Upload area
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
-    uploadArea.addEventListener('drop', handleDrop);
-    
-    // File input
-    fileInput.addEventListener('change', handleFileSelect);
-    
     // Gallery controls
     searchInput.addEventListener('input', filterGallery);
     refreshBtn.addEventListener('click', loadGallery);
@@ -49,181 +32,56 @@ function setupEventListeners() {
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', () => handleCopy(btn.dataset.type));
     });
-    
-    // Delete button
-    document.querySelector('.delete-btn').addEventListener('click', handleDelete);
-}
-
-// Drag and drop handlers
-function handleDragOver(e) {
-    e.preventDefault();
-    uploadArea.classList.add('drag-over');
-}
-
-function handleDragLeave(e) {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-    if (files.length > 0) {
-        handleFiles(files);
-    }
-}
-
-function handleFileSelect(e) {
-    const files = Array.from(e.target.files);
-    handleFiles(files);
-    fileInput.value = ''; // Reset input
-}
-
-// File handling
-function handleFiles(files) {
-    files.forEach(file => {
-        if (!validateFile(file)) return;
-        uploadFile(file);
-    });
-}
-
-function validateFile(file) {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-        showNotification('Invalid file type. Please upload PNG, JPG, GIF, or WEBP images.', 'error');
-        return false;
-    }
-    
-    if (file.size > MAX_FILE_SIZE) {
-        showNotification(`File ${file.name} exceeds 15MB limit.`, 'error');
-        return false;
-    }
-    
-    return true;
-}
-
-async function uploadFile(file) {
-    const uploadId = Date.now() + Math.random();
-    const uploadItem = createUploadItem(file, uploadId);
-    uploadQueue.appendChild(uploadItem);
-    
-    try {
-        // Read file as base64
-        const base64 = await fileToBase64(file);
-        
-        // Update progress
-        updateUploadProgress(uploadId, 50);
-        
-        // Upload to server
-        const response = await fetch('/api/upload', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                filename: file.name,
-                content: base64,
-                size: file.size
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Upload failed');
-        }
-        
-        const result = await response.json();
-        
-        // Update progress to complete
-        updateUploadProgress(uploadId, 100);
-        updateUploadStatus(uploadId, 'Uploaded!', 'success');
-        
-        // Remove upload item after delay
-        setTimeout(() => {
-            uploadItem.remove();
-            loadGallery(); // Refresh gallery
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Upload error:', error);
-        updateUploadStatus(uploadId, error.message, 'error');
-    }
-}
-
-function createUploadItem(file, uploadId) {
-    const div = document.createElement('div');
-    div.className = 'upload-item';
-    div.dataset.uploadId = uploadId;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        div.innerHTML = `
-            <img src="${e.target.result}" alt="${file.name}">
-            <div class="upload-item-info">
-                <div class="upload-item-name">${file.name}</div>
-                <div class="upload-item-size">${formatFileSize(file.size)}</div>
-                <div class="upload-progress">
-                    <div class="upload-progress-bar" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="upload-status">Uploading...</div>
-        `;
-    };
-    reader.readAsDataURL(file);
-    
-    return div;
-}
-
-function updateUploadProgress(uploadId, percent) {
-    const item = document.querySelector(`[data-upload-id="${uploadId}"]`);
-    if (item) {
-        const progressBar = item.querySelector('.upload-progress-bar');
-        progressBar.style.width = percent + '%';
-    }
-}
-
-function updateUploadStatus(uploadId, message, type) {
-    const item = document.querySelector(`[data-upload-id="${uploadId}"]`);
-    if (item) {
-        const status = item.querySelector('.upload-status');
-        status.textContent = message;
-        status.className = `upload-status ${type}`;
-    }
-}
-
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
 }
 
 // Gallery functions
 async function loadGallery() {
+    const config = getConfig();
+    if (!config) {
+        galleryGrid.innerHTML = '<div class="loading">Please configure your repository first.</div>';
+        return;
+    }
+    
     galleryGrid.innerHTML = '<div class="loading">Loading images...</div>';
     
     try {
-        const response = await fetch('/api/images');
-        if (!response.ok) throw new Error('Failed to load images');
+        const apiUrl = getApiUrl();
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                galleryGrid.innerHTML = '<div class="loading">No images folder found. Create an "images" folder in your repo and add some images!</div>';
+                return;
+            }
+            throw new Error('Failed to load images');
+        }
         
         const data = await response.json();
-        currentImages = data.images || [];
+        
+        // Filter for image files only
+        const imageFiles = data.filter(file => 
+            file.type === 'file' && 
+            /\.(png|jpg|jpeg|gif|webp)$/i.test(file.name)
+        );
+        
+        // Convert to our format
+        currentImages = imageFiles.map(file => ({
+            name: file.name,
+            url: file.download_url,
+            size: file.size,
+            sha: file.sha
+        }));
         
         displayGallery(currentImages);
     } catch (error) {
         console.error('Gallery load error:', error);
-        galleryGrid.innerHTML = '<div class="loading">Failed to load images. Please try again.</div>';
+        galleryGrid.innerHTML = '<div class="loading">Failed to load images. Make sure your repository is public and the images folder exists.</div>';
     }
 }
 
 function displayGallery(images) {
     if (images.length === 0) {
-        galleryGrid.innerHTML = '<div class="loading">No images yet. Upload some to get started!</div>';
+        galleryGrid.innerHTML = '<div class="loading">No images yet. Upload some to your GitHub repo to get started!</div>';
         return;
     }
     
@@ -245,7 +103,6 @@ function createGalleryItem(image) {
             <div class="gallery-item-name" title="${image.name}">${image.name}</div>
             <div class="gallery-item-meta">
                 <span>${formatFileSize(image.size)}</span>
-                <span>${formatDate(image.date)}</span>
             </div>
             <div class="gallery-item-actions">
                 <button class="btn-primary" onclick="copyDirectLink('${image.url}', event)">
@@ -282,7 +139,6 @@ function openModal(image) {
     modalImage.src = image.url;
     modalFilename.textContent = image.name;
     modalSize.textContent = formatFileSize(image.size);
-    modalDate.textContent = formatDate(image.date);
     
     // Load image to get dimensions
     const img = new Image();
@@ -305,33 +161,36 @@ function closeModal() {
 async function copyDirectLink(url, event) {
     if (event) event.stopPropagation();
     await copyToClipboard(url);
-    showCopyFeedback('Direct link copied!');
+    showNotification('Direct link copied! Perfect for Discord!');
 }
 
 async function handleCopy(type) {
     if (!currentImageData) return;
     
     let text = '';
+    let message = '';
+    
     switch (type) {
         case 'direct':
             text = currentImageData.url;
+            message = 'Direct link copied!';
             break;
         case 'markdown':
             text = `![${currentImageData.name}](${currentImageData.url})`;
+            message = 'Markdown copied!';
             break;
         case 'html':
             text = `<img src="${currentImageData.url}" alt="${currentImageData.name}">`;
+            message = 'HTML copied!';
+            break;
+        case 'discord':
+            text = currentImageData.url;
+            message = 'Discord link copied! Just paste it in any channel.';
             break;
     }
     
     await copyToClipboard(text);
-    
-    const labels = {
-        direct: 'Direct link copied!',
-        markdown: 'Markdown copied!',
-        html: 'HTML copied!'
-    };
-    showCopyFeedback(labels[type]);
+    showCopyFeedback(message);
 }
 
 async function copyToClipboard(text) {
@@ -342,6 +201,8 @@ async function copyToClipboard(text) {
         // Fallback
         const textarea = document.createElement('textarea');
         textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
@@ -355,40 +216,32 @@ function showCopyFeedback(message) {
     
     setTimeout(() => {
         copyFeedback.classList.remove('show');
-    }, 2000);
+    }, 3000);
 }
 
-// Delete function
-async function handleDelete() {
-    if (!currentImageData) return;
+function showNotification(message) {
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: var(--bg-dark);
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(110, 255, 127, 0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
     
-    if (!confirm(`Are you sure you want to delete ${currentImageData.name}?`)) {
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/delete', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                filename: currentImageData.name
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Delete failed');
-        }
-        
-        closeModal();
-        loadGallery();
-        showNotification('Image deleted successfully', 'success');
-    } catch (error) {
-        console.error('Delete error:', error);
-        showNotification(error.message, 'error');
-    }
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
 }
 
 // Utility functions
@@ -400,20 +253,29 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+// Add CSS for toast animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
     
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
-    
-    return date.toLocaleDateString();
-}
-
-function showNotification(message, type) {
-    // Simple notification - you could enhance this with a toast library
-    alert(message);
-}
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
