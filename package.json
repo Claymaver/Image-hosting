@@ -1,0 +1,16 @@
+{
+  "name": "image-host",
+  "version": "1.0.0",
+  "description": "Image hosting site with GitHub storage",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2"
+  },
+  "devDependencies": {
+    "vercel": "^25.2.0"
+  }
+}
