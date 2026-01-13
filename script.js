@@ -64,10 +64,11 @@ async function loadGallery() {
             /\.(png|jpg|jpeg|gif|webp)$/i.test(file.name)
         );
         
-        // Convert to our format
+        // Convert to our format with GitHub Pages URLs
+        const config = getConfig();
         currentImages = imageFiles.map(file => ({
             name: file.name,
-            url: file.download_url,
+            url: `https://${config.owner}.github.io/${config.repo}/images/${file.name}`,
             size: file.size,
             sha: file.sha
         }));

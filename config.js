@@ -74,9 +74,9 @@ function getRepoUrl(filename = '') {
     const config = getConfig();
     if (!config) return null;
     
-    const { owner, repo, branch } = config;
+    const { owner, repo } = config;
     const path = filename ? `images/${filename}` : 'images';
-    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+    return `https://${owner}.github.io/${repo}/${path}`;
 }
 
 function getApiUrl() {
