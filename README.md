@@ -1,6 +1,6 @@
 # 🖼️ Image Host (Git Edition)
 
-A simplified, green-themed image hosting site that uses **GitHub directly** for storage. No file size limits from Vercel - just GitHub's generous 100MB per file limit!
+Image hosting site that uses **GitHub directly** for storage with GitHub's generous 100MB per file limit!
 
 ## ✨ Features
 
@@ -35,12 +35,7 @@ A simplified, green-themed image hosting site that uses **GitHub directly** for 
 3. Upload these files to your repo: `index.html`, `styles.css`, `script.js`, `config.js`
 4. Your site will be live at `https://your-username.github.io/image-storage`
 
-**Option B: Vercel (Also Easy)**
-1. Push your code to GitHub
-2. Go to [Vercel](https://vercel.com) and import your repository
-3. Deploy! No environment variables needed!
-
-**Option C: Netlify**
+**Option B: Netlify**
 1. Drag and drop the project folder onto [Netlify Drop](https://app.netlify.com/drop)
 2. Done!
 
