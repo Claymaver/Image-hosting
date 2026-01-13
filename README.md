@@ -94,16 +94,6 @@ image-host/
 └── config.js           # Repository configuration
 ```
 
-## 🔧 No Backend Needed!
-
-This version doesn't use:
-- ❌ Vercel serverless functions
-- ❌ API keys or tokens
-- ❌ Environment variables
-- ❌ Database
-
-It just reads directly from GitHub's public API!
-
 ## ⚙️ Configuration
 
 Your repository configuration is saved in your browser's localStorage, so:
@@ -112,12 +102,6 @@ Your repository configuration is saved in your browser's localStorage, so:
 - No server-side configuration needed
 
 ## 🌟 Advantages of This Approach
-
-### vs. Vercel Functions:
-- ✅ 100MB file limit instead of 4.5MB
-- ✅ No serverless function cold starts
-- ✅ Simpler deployment (no environment variables)
-- ✅ Works on any static host (GitHub Pages, Netlify, Vercel, etc.)
 
 ### vs. Other Image Hosts:
 - ✅ Complete control - you own your images
